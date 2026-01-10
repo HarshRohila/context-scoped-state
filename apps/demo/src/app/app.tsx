@@ -1,51 +1,47 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
-import NxWelcome from './nx-welcome';
+import { Store, createStoreHook } from 'context-store-react';
 
-import { Route, Routes, Link } from 'react-router-dom';
+// Define a counter store
+class CounterStore extends Store<{ count: number }> {
+  protected getInitialState() {
+    return { count: 0 };
+  }
 
+  increment() {
+    this.setState({ count: this.getState().count + 1 });
+  }
+
+  decrement() {
+    this.setState({ count: this.getState().count - 1 });
+  }
+}
+
+// Create the hook
+const useCounterStore = createStoreHook(CounterStore);
+
+// Counter component
+function Counter() {
+  const store = useCounterStore();
+
+  return (
+    <div style={{ textAlign: 'center', padding: '2rem' }}>
+      <h1>Counter: {store.state.count}</h1>
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+        <button onClick={() => store.decrement()}>-</button>
+        <button onClick={() => store.increment()}>+</button>
+      </div>
+    </div>
+  );
+}
+
+// App with context provider
 export function App() {
   return (
-    <div>
-      <NxWelcome title="@context-store-react/demo" />
-
-      {/* START: routes */}
-      {/* These routes and navigation have been generated for you */}
-      {/* Feel free to move and update them to fit your needs */}
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
+    <useCounterStore.Context>
+      <div style={{ fontFamily: 'system-ui, sans-serif' }}>
+        <h2 style={{ textAlign: 'center' }}>context-store-react Demo</h2>
+        <Counter />
       </div>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
-              This is the generated root route.{' '}
-              <Link to="/page-2">Click here for page 2.</Link>
-            </div>
-          }
-        />
-        <Route
-          path="/page-2"
-          element={
-            <div>
-              <Link to="/">Click here to go back to root page.</Link>
-            </div>
-          }
-        />
-      </Routes>
-      {/* END: routes */}
-    </div>
+    </useCounterStore.Context>
   );
 }
 
