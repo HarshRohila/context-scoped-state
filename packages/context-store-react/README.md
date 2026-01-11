@@ -2,7 +2,7 @@
 
 **State management that respects component boundaries.**
 
-Unlike global state libraries (Redux, Zustand, Jotai), `context-scoped-state` keeps your state where it belongs — scoped to the component tree that needs it. Each context provider creates an independent store instance, making your components truly reusable and your tests truly isolated.
+Unlike global state libraries (Redux, Zustand), `context-scoped-state` keeps your state where it belongs — scoped to the component tree that needs it. Each context provider creates an independent store instance, making your components truly reusable and your tests truly isolated.
 
 ## Why Scoped State?
 
