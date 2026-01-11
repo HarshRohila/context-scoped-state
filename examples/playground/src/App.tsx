@@ -1,22 +1,4 @@
-import { Store, createStoreHook } from 'context-scoped-state';
-
-// Define a counter store
-class CounterStore extends Store<{ count: number }> {
-  protected getInitialState() {
-    return { count: 0 };
-  }
-
-  increment() {
-    this.setState({ count: this.getState().count + 1 });
-  }
-
-  decrement() {
-    this.setState({ count: this.getState().count - 1 });
-  }
-}
-
-// Create the hook - this single export is all you need!
-const useCounterStore = createStoreHook(CounterStore);
+import { useCounterStore } from './counterStore';
 
 // Counter component
 function Counter() {
@@ -52,7 +34,7 @@ function App() {
           context-scoped-state Playground
         </h2>
         <p style={{ textAlign: 'center', color: '#666' }}>
-          Edit <code>src/App.tsx</code> to experiment!
+          Edit <code>src/counterStore.ts</code> to experiment!
         </p>
         <Counter />
       </div>

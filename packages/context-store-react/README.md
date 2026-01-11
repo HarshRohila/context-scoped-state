@@ -39,7 +39,7 @@ pnpm add context-scoped-state
 ### 1. Create Your Store (one file, one export)
 
 ```tsx
-// stores/counterStore.ts
+// counterStore.ts
 import { Store, createStoreHook } from 'context-scoped-state';
 
 class CounterStore extends Store<{ count: number }> {
@@ -63,7 +63,7 @@ export const useCounterStore = createStoreHook(CounterStore);
 ### 2. Use in Your App
 
 ```tsx
-import { useCounterStore } from './stores/counterStore';
+import { useCounterStore } from './counterStore';
 
 function Counter() {
   const counterStore = useCounterStore();
