@@ -30,7 +30,7 @@ describe('createStoreHook', () => {
     render(
       <useCounterStore.Context>
         <TestCounter />
-      </useCounterStore.Context>
+      </useCounterStore.Context>,
     );
 
     expect(screen.getByTestId('count').textContent).toBe('0');
@@ -40,7 +40,7 @@ describe('createStoreHook', () => {
     render(
       <useCounterStore.Context>
         <TestCounter />
-      </useCounterStore.Context>
+      </useCounterStore.Context>,
     );
 
     fireEvent.click(screen.getByRole('button'));
@@ -54,7 +54,7 @@ describe('createStoreHook', () => {
     console.error = () => {};
 
     expect(() => render(<TestCounter />)).toThrow(
-      'useStore must be used within a StoreContext'
+      'Store hook used outside of its Context provider.',
     );
 
     console.error = originalError;
@@ -75,7 +75,7 @@ describe('createStoreHook', () => {
       <useCounterStore.Context>
         <Display />
         <Button />
-      </useCounterStore.Context>
+      </useCounterStore.Context>,
     );
 
     expect(screen.getByTestId('display').textContent).toBe('0');
@@ -83,5 +83,54 @@ describe('createStoreHook', () => {
     fireEvent.click(screen.getByRole('button'));
 
     expect(screen.getByTestId('display').textContent).toBe('1');
+  });
+
+  it('should create independent state for nested same-store contexts', () => {
+    function ParentConsumer() {
+      const store = useCounterStore();
+      return (
+        <>
+          <span data-testid="parent-count">{store.state.count}</span>
+          <button data-testid="parent-btn" onClick={() => store.increment()}>
+            +Parent
+          </button>
+        </>
+      );
+    }
+
+    function ChildConsumer() {
+      const store = useCounterStore();
+      return (
+        <>
+          <span data-testid="child-count">{store.state.count}</span>
+          <button data-testid="child-btn" onClick={() => store.increment()}>
+            +Child
+          </button>
+        </>
+      );
+    }
+
+    render(
+      <useCounterStore.Context>
+        <ParentConsumer />
+        <useCounterStore.Context>
+          <ChildConsumer />
+        </useCounterStore.Context>
+      </useCounterStore.Context>,
+    );
+
+    // Both start at 0
+    expect(screen.getByTestId('parent-count').textContent).toBe('0');
+    expect(screen.getByTestId('child-count').textContent).toBe('0');
+
+    // Increment parent - child should remain 0
+    fireEvent.click(screen.getByTestId('parent-btn'));
+    expect(screen.getByTestId('parent-count').textContent).toBe('1');
+    expect(screen.getByTestId('child-count').textContent).toBe('0');
+
+    // Increment child - parent should remain 1
+    fireEvent.click(screen.getByTestId('child-btn'));
+    expect(screen.getByTestId('parent-count').textContent).toBe('1');
+    expect(screen.getByTestId('child-count').textContent).toBe('1');
   });
 });

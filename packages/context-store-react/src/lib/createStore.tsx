@@ -1,14 +1,22 @@
-import React from "react";
-import type { Store } from "./Store";
+import React from 'react';
+import type { Store } from './Store';
 
-function createStoreHook<U, T extends Store<U>>(storeClass: new () => T) {
+function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
   const StoreContext = React.createContext<T | undefined>(undefined);
 
   function useStore(): T {
     const contextValue = React.useContext(StoreContext);
 
     if (!contextValue) {
-      throw new Error("useStore must be used within a StoreContext");
+      throw new Error(
+        `Store hook used outside of its Context provider.\n\n` +
+          `If you created your hook like:\n` +
+          `  const useYourStore = createStoreHook(${storeClass.name});\n\n` +
+          `Then wrap your component with:\n` +
+          `  <useYourStore.Context>\n` +
+          `    <YourComponent />\n` +
+          `  </useYourStore.Context>`,
+      );
     }
 
     const [state, setState] = React.useState(contextValue.getState());

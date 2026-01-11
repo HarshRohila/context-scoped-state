@@ -1,9 +1,9 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 
 abstract class Store<T> {
   protected abstract getInitialState(): T;
 
-  private _stateSubject: BehaviorSubject<T>;
+  private readonly _stateSubject: BehaviorSubject<T>;
 
   constructor() {
     this.state = this.getInitialState();

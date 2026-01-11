@@ -20,14 +20,14 @@ const useCounterStore = createStoreHook(CounterStore);
 
 // Counter component
 function Counter() {
-  const store = useCounterStore();
+  const counterStore = useCounterStore();
 
   return (
     <div style={{ textAlign: 'center', padding: '2rem' }}>
-      <h1>Counter: {store.state.count}</h1>
+      <h1>Counter: {counterStore.state.count}</h1>
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button onClick={() => store.decrement()}>-</button>
-        <button onClick={() => store.increment()}>+</button>
+        <button onClick={() => counterStore.decrement()}>-</button>
+        <button onClick={() => counterStore.increment()}>+</button>
       </div>
     </div>
   );
