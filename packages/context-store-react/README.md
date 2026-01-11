@@ -30,6 +30,10 @@ pnpm add context-scoped-state
 
 > **Peer Dependencies:** React 18+
 
+## Try it Online
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/HarshRohila/context-scoped-state/tree/master/examples/playground)
+
 ## Quick Start
 
 ### 1. Create Your Store (one file, one export)
