@@ -1,0 +1,40 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#61DAFB" opacity="0.1"/>
+  
+  <!-- Outer container (global scope) -->
+  <rect x="30" y="30" width="140" height="140" rx="8" fill="none" stroke="#61DAFB" stroke-width="3" stroke-dasharray="4 4" opacity="0.5"/>
+  
+  <!-- Scoped container 1 -->
+  <rect x="50" y="50" width="60" height="60" rx="6" fill="#61DAFB" fill-opacity="0.2" stroke="#61DAFB" stroke-width="2.5"/>
+  <circle cx="65" cy="65" r="4" fill="#61DAFB"/>
+  <circle cx="80" cy="65" r="4" fill="#61DAFB"/>
+  <circle cx="95" cy="65" r="4" fill="#61DAFB"/>
+  
+  <!-- Scoped container 2 -->
+  <rect x="120" y="50" width="60" height="60" rx="6" fill="#61DAFB" fill-opacity="0.2" stroke="#61DAFB" stroke-width="2.5"/>
+  <circle cx="135" cy="65" r="4" fill="#61DAFB"/>
+  <circle cx="150" cy="65" r="4" fill="#61DAFB"/>
+  <circle cx="165" cy="65" r="4" fill="#61DAFB"/>
+  
+  <!-- Scoped container 3 (nested) -->
+  <rect x="50" y="120" width="60" height="60" rx="6" fill="#61DAFB" fill-opacity="0.2" stroke="#61DAFB" stroke-width="2.5"/>
+  <rect x="60" y="130" width="40" height="40" rx="4" fill="#61DAFB" fill-opacity="0.3" stroke="#61DAFB" stroke-width="2"/>
+  <circle cx="70" cy="140" r="3" fill="#61DAFB"/>
+  <circle cx="85" cy="140" r="3" fill="#61DAFB"/>
+  
+  <!-- Scoped container 4 -->
+  <rect x="120" y="120" width="60" height="60" rx="6" fill="#61DAFB" fill-opacity="0.2" stroke="#61DAFB" stroke-width="2.5"/>
+  <circle cx="135" cy="135" r="4" fill="#61DAFB"/>
+  <circle cx="150" cy="135" r="4" fill="#61DAFB"/>
+  <circle cx="165" cy="135" r="4" fill="#61DAFB"/>
+  <circle cx="135" cy="150" r="4" fill="#61DAFB"/>
+  <circle cx="150" cy="150" r="4" fill="#61DAFB"/>
+  <circle cx="165" cy="150" r="4" fill="#61DAFB"/>
+  
+  <!-- Connection lines showing context boundaries -->
+  <line x1="80" y1="50" x2="80" y2="30" stroke="#61DAFB" stroke-width="2" opacity="0.3"/>
+  <line x1="150" y1="50" x2="150" y2="30" stroke="#61DAFB" stroke-width="2" opacity="0.3"/>
+  <line x1="80" y1="120" x2="80" y2="110" stroke="#61DAFB" stroke-width="2" opacity="0.3"/>
+  <line x1="150" y1="120" x2="150" y2="110" stroke="#61DAFB" stroke-width="2" opacity="0.3"/>
+</svg>

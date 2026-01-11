@@ -1,6 +1,8 @@
-# context-scoped-state
-
-**State management that respects component boundaries.**
+<div align="center">
+  <img src="logo.svg" alt="context-scoped-state logo" width="120" height="120">
+  <h1>context-scoped-state</h1>
+  <p><strong>State management that respects component boundaries.</strong></p>
+</div>
 
 Unlike global state libraries (Redux, Zustand), `context-scoped-state` keeps your state where it belongs — scoped to the component tree that needs it. Each context provider creates an independent store instance, making your components truly reusable and your tests truly isolated.
 
