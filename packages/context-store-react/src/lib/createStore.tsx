@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import type { Store } from './Store';
 
 function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
@@ -19,14 +19,14 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
       );
     }
 
-    const [state, setState] = React.useState(contextValue.getState());
-
-    React.useEffect(() => {
-      const subscription = contextValue.state$().subscribe(setState);
-      return () => subscription.unsubscribe();
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const state = useSyncExternalStore(
+      (onStoreChange) => {
+        const subscription = contextValue.state$().subscribe(onStoreChange);
+        return () => subscription.unsubscribe();
+      },
+      () => contextValue.getState(),
+      () => contextValue.getState(), // getServerSnapshot for SSR
+    );
 
     contextValue.state = state;
 
