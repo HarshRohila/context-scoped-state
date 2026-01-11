@@ -19,7 +19,6 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "rxjs": ">=7.0.0"
+    "react": ">=18.0.0"
   }
 }

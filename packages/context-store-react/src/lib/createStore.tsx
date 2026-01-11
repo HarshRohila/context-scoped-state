@@ -41,7 +41,9 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
     const storeClassRef = React.useRef(new storeClass());
 
     return (
-      <StoreContext value={storeClassRef.current}>{children}</StoreContext>
+      <StoreContext.Provider value={storeClassRef.current}>
+        {children}
+      </StoreContext.Provider>
     );
   };
 
@@ -66,7 +68,11 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
 
     const storeRef = React.useRef(createMockStore());
 
-    return <StoreContext value={storeRef.current}>{children}</StoreContext>;
+    return (
+      <StoreContext.Provider value={storeRef.current}>
+        {children}
+      </StoreContext.Provider>
+    );
   };
 
   return useStore;
