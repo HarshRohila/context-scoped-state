@@ -32,10 +32,11 @@ pnpm add context-scoped-state
 
 ## Quick Start
 
-### 1. Define Your Store
+### 1. Create Your Store (one file, one export)
 
 ```tsx
-import { Store } from 'context-scoped-state';
+// stores/counterStore.ts
+import { Store, createStoreHook } from 'context-scoped-state';
 
 class CounterStore extends Store<{ count: number }> {
   protected getInitialState() {
@@ -50,32 +51,28 @@ class CounterStore extends Store<{ count: number }> {
     this.setState({ count: this.getState().count - 1 });
   }
 }
+
+// This single export is all you need
+export const useCounterStore = createStoreHook(CounterStore);
 ```
 
-### 2. Create the Hook
+### 2. Use in Your App
 
 ```tsx
-import { createStoreHook } from 'context-scoped-state';
+import { useCounterStore } from './stores/counterStore';
 
-const useCounterStore = createStoreHook(CounterStore);
-```
-
-### 3. Use in Components
-
-```tsx
 function Counter() {
-  const store = useCounterStore();
+  const counterStore = useCounterStore();
 
   return (
     <div>
-      <span>{store.state.count}</span>
-      <button onClick={() => store.increment()}>+</button>
-      <button onClick={() => store.decrement()}>-</button>
+      <span>{counterStore.state.count}</span>
+      <button onClick={() => counterStore.increment()}>+</button>
+      <button onClick={() => counterStore.decrement()}>-</button>
     </div>
   );
 }
 
-// Wrap with Context provider
 function App() {
   return (
     <useCounterStore.Context>
@@ -85,7 +82,7 @@ function App() {
 }
 ```
 
-That's it. No providers at the root, no selectors, no reducers, no actions, no dispatch.
+That's it. One hook export gives you the hook and its `.Context` provider. No extra setup needed.
 
 ## Examples
 
@@ -182,7 +179,6 @@ No mocking libraries. No global state cleanup. Just render with the state you ne
 - Building reusable components with internal state
 - You want test isolation without extra setup
 - State naturally belongs to a subtree, not the whole app
-- You prefer OOP patterns (classes, methods)
 
 **Need global state?** Just place the Context at your app root — same API, app-wide access.
 
@@ -190,8 +186,8 @@ No mocking libraries. No global state cleanup. Just render with the state you ne
 
 **vs useState:**
 
-- `useState` binds state logic directly to the component, making it hard to reuse or test independently
-- With `context-scoped-state`, state logic lives in a separate class — reusable across components and easily testable
+- `useState` binds state directly to the component — poor separation of concerns and hard to test since you can't easily set a component to a specific state
+- Lifting state up with `useState` requires refactoring components and passing props; with `context-scoped-state`, just move the Context wrapper up the tree
 
 **vs useReducer:**
 
