@@ -1,101 +1,206 @@
-# ContextStoreReact
+<div align="center">
+  <img src="logo.svg" alt="context-scoped-state logo" width="120" height="120">
+  <h1>context-scoped-state</h1>
+  <p><strong>State management that respects component boundaries.</strong></p>
+</div>
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Unlike global state libraries (Redux, Zustand), `context-scoped-state` keeps your state where it belongs — scoped to the component tree that needs it. Each context provider creates an independent store instance, making your components truly reusable and your tests truly isolated.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Why Scoped State?
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Global state is convenient, but it comes with hidden costs:
 
-## Run tasks
+- **Testing nightmares** — State leaks between tests, requiring complex cleanup
+- **Component coupling** — Reusing components means sharing their global state
+- **Implicit dependencies** — Components magically depend on global singletons
 
-To run the dev server for your app, use:
+`context-scoped-state` solves this by leveraging React's Context API the right way. Same API simplicity, but with proper encapsulation.
 
-```sh
-npx nx serve demo
+## Installation
+
+```bash
+npm install context-scoped-state
 ```
 
-To create a production bundle:
-
-```sh
-npx nx build demo
+```bash
+yarn add context-scoped-state
 ```
 
-To see all available targets to run for a project, run:
-
-```sh
-npx nx show project demo
+```bash
+pnpm add context-scoped-state
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+> **Peer Dependencies:** React 18+
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Try it Online
 
-## Add new projects
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/HarshRohila/context-scoped-state/tree/master/examples/playground)
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+## Quick Start
 
-Use the plugin's generator to create new projects.
+### 1. Create Your Store (one file, one export)
 
-To generate a new application, use:
+```tsx
+// counterStore.ts
+import { Store, createStoreHook } from 'context-scoped-state';
 
-```sh
-npx nx g @nx/react:app demo
+class CounterStore extends Store<{ count: number }> {
+  protected getInitialState() {
+    return { count: 0 };
+  }
+
+  increment() {
+    this.setState({ count: this.getState().count + 1 });
+  }
+
+  decrement() {
+    this.setState({ count: this.getState().count - 1 });
+  }
+}
+
+// This single export is all you need
+export const useCounterStore = createStoreHook(CounterStore);
 ```
 
-To generate a new library, use:
+### 2. Use in Your App
 
-```sh
-npx nx g @nx/react:lib mylib
+```tsx
+import { useCounterStore } from './counterStore';
+
+function Counter() {
+  const counterStore = useCounterStore();
+
+  return (
+    <div>
+      <span>{counterStore.state.count}</span>
+      <button onClick={() => counterStore.increment()}>+</button>
+      <button onClick={() => counterStore.decrement()}>-</button>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <useCounterStore.Context>
+      <Counter />
+    </useCounterStore.Context>
+  );
+}
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+That's it. One hook export gives you the hook and its `.Context` provider. No extra setup needed.
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Examples
 
-## Set up CI!
+### Independent Nested Stores
 
-### Step 1
+Each `Context` creates a completely independent store instance. Perfect for reusable widget patterns:
 
-To connect to Nx Cloud, run the following command:
+```tsx
+function PlayerScore() {
+  const store = useScoreStore();
+  return <span>Score: {store.state.score}</span>;
+}
 
-```sh
-npx nx connect
+function Game() {
+  return (
+    <div>
+      {/* Player 1 has their own score */}
+      <useScoreStore.Context>
+        <h2>Player 1</h2>
+        <PlayerScore />
+      </useScoreStore.Context>
+
+      {/* Player 2 has their own score */}
+      <useScoreStore.Context>
+        <h2>Player 2</h2>
+        <PlayerScore />
+      </useScoreStore.Context>
+    </div>
+  );
+}
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+Both players have completely independent state — no configuration needed.
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Testing with MockContext
 
-### Step 2
+Test components in any state without complex setup:
 
-Use the following command to configure a CI workflow for your workspace:
+```tsx
+import { render, screen } from '@testing-library/react';
 
-```sh
-npx nx g ci-workflow
+test('shows warning when balance is low', () => {
+  render(
+    <useAccountStore.MockContext state={{ balance: 5, currency: 'USD' }}>
+      <AccountStatus />
+    </useAccountStore.MockContext>,
+  );
+
+  expect(screen.getByText('Low balance warning')).toBeInTheDocument();
+});
+
+test('shows normal status when balance is healthy', () => {
+  render(
+    <useAccountStore.MockContext state={{ balance: 1000, currency: 'USD' }}>
+      <AccountStatus />
+    </useAccountStore.MockContext>,
+  );
+
+  expect(screen.queryByText('Low balance warning')).not.toBeInTheDocument();
+});
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+No mocking libraries. No global state cleanup. Just render with the state you need.
 
-## Install Nx Console
+## Why context-scoped-state Over Other Libraries?
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+| Feature                | context-scoped-state | Redux                        | Zustand        |
+| ---------------------- | -------------------- | ---------------------------- | -------------- |
+| **Scoped by default**  | Yes                  | No                           | No             |
+| **Multiple instances** | Automatic            | Manual wiring                | Manual wiring  |
+| **Test isolation**     | Built-in MockContext | Requires setup               | Requires reset |
+| **Boilerplate**        | Low                  | High                         | Low            |
+| **Type safety**        | Full                 | Requires setup               | Good           |
+| **Learning curve**     | Just classes         | Actions, reducers, selectors | Simple         |
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### The Core Difference
 
-## Useful links
+**Global state libraries** make you fight against React's component model. You end up with:
 
-Learn more:
+- Selector functions to prevent re-renders
+- Complex test fixtures to reset global state
+- Workarounds for component reusability
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**context-scoped-state** works _with_ React:
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- State lives in the component tree, just like React intended
+- Each provider = new instance, automatically
+- Testing is just rendering with different props
+
+### When to Use What
+
+**Use context-scoped-state when:**
+
+- Building reusable components with internal state
+- You want test isolation without extra setup
+- State naturally belongs to a subtree, not the whole app
+
+**Need global state?** Just place the Context at your app root — same API, app-wide access.
+
+### Why Not Just Use useState or useReducer?
+
+**vs useState:**
+
+- `useState` binds state directly to the component — poor separation of concerns and hard to test since you can't easily set a component to a specific state
+- Lifting state up with `useState` requires refactoring components and passing props; with `context-scoped-state`, just move the Context wrapper up the tree
+
+**vs useReducer:**
+
+- No action types, switch statements, or dispatch boilerplate
+- Just call methods directly: `store.increment()` instead of `dispatch({ type: 'INCREMENT' })`
+- Full TypeScript autocomplete for your actions
+
+---
+
+**context-scoped-state** — Because not all state needs to be global.
