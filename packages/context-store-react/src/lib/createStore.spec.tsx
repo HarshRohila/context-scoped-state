@@ -133,4 +133,38 @@ describe('createStoreHook', () => {
     expect(screen.getByTestId('parent-count').textContent).toBe('1');
     expect(screen.getByTestId('child-count').textContent).toBe('1');
   });
+
+  it('should render with custom state using MockContext', () => {
+    render(
+      <useCounterStore.MockContext state={{ count: 42 }}>
+        <TestCounter />
+      </useCounterStore.MockContext>,
+    );
+
+    expect(screen.getByTestId('count').textContent).toBe('42');
+  });
+
+  it('should use original initial state when MockContext has no state prop', () => {
+    render(
+      <useCounterStore.MockContext>
+        <TestCounter />
+      </useCounterStore.MockContext>,
+    );
+
+    expect(screen.getByTestId('count').textContent).toBe('0');
+  });
+
+  it('should allow state updates in MockContext', () => {
+    render(
+      <useCounterStore.MockContext state={{ count: 10 }}>
+        <TestCounter />
+      </useCounterStore.MockContext>,
+    );
+
+    expect(screen.getByTestId('count').textContent).toBe('10');
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByTestId('count').textContent).toBe('11');
+  });
 });

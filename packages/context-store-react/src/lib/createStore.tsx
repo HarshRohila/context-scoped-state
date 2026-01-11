@@ -45,6 +45,30 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
     );
   };
 
+  useStore.MockContext = function MockContextComponent({
+    children,
+    state,
+  }: {
+    children: React.ReactNode;
+    state?: ReturnType<T['getState']>;
+  }) {
+    const createMockStore = (): T => {
+      if (state === undefined) {
+        return new storeClass();
+      }
+      class MockStore extends (storeClass as new () => Store<unknown>) {
+        protected getInitialState() {
+          return state;
+        }
+      }
+      return new MockStore() as unknown as T;
+    };
+
+    const storeRef = React.useRef(createMockStore());
+
+    return <StoreContext value={storeRef.current}>{children}</StoreContext>;
+  };
+
   return useStore;
 }
 export { createStoreHook };
