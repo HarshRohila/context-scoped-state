@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="logo.svg" alt="context-scoped-state logo" width="120" height="120">
+  <img src="./packages/context-store-react/logo.svg" alt="context-scoped-state logo" width="120" height="120">
   <h1>context-scoped-state</h1>
   <p><strong>State management that respects component boundaries.</strong></p>
 </div>
