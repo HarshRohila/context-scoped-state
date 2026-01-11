@@ -1,7 +1,21 @@
 {
-  "name": "context-store-react",
+  "name": "context-scoped-state",
   "version": "0.0.1",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HarshRohila/context-scoped-state.git"
+  },
+  "keywords": [
+    "react",
+    "state",
+    "context",
+    "state-management",
+    "react-context",
+    "scoped-state",
+    "hooks",
+    "typescript"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
