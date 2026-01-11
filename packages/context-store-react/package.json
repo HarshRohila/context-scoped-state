@@ -1,10 +1,12 @@
 {
   "name": "context-scoped-state",
-  "version": "0.0.1",
+  "version": "0.0.3",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HarshRohila/context-scoped-state.git"
+    "url": "https://github.com/HarshRohila/context-scoped-state.git",
+    "directory": "packages/context-store-react"
   },
   "keywords": [
     "react",
@@ -30,6 +32,7 @@
   },
   "files": [
     "dist",
+    "LICENSE",
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
