@@ -9,6 +9,10 @@ class TestStore extends Store<{ value: number }> {
   setValue(newValue: number) {
     this.setState({ value: newValue });
   }
+
+  incrementValue() {
+    this.setState((prev) => ({ value: prev.value + 1 }));
+  }
 }
 
 describe('Store', () => {
@@ -51,5 +55,51 @@ describe('Store', () => {
     store.setValue(2);
 
     expect(values).toEqual([0, 1]);
+  });
+
+  it('should update state with callback-based setState', () => {
+    const store = new TestStore();
+    store.setValue(5);
+    store.incrementValue();
+    expect(store.getState()).toEqual({ value: 6 });
+  });
+});
+
+class MultiPropStore extends Store<{ value: number; name: string }> {
+  protected getInitialState() {
+    return { value: 0, name: 'initial' };
+  }
+
+  patchValue(newValue: number) {
+    this.patchState({ value: newValue });
+  }
+
+  patchName(newName: string) {
+    this.patchState({ name: newName });
+  }
+
+  incrementWithPatch() {
+    this.patchState((state) => ({ value: state.value + 1 }));
+  }
+}
+
+describe('Store patchState', () => {
+  it('should partially update state with direct value', () => {
+    const store = new MultiPropStore();
+    store.patchValue(42);
+    expect(store.getState()).toEqual({ value: 42, name: 'initial' });
+  });
+
+  it('should partially update state preserving other properties', () => {
+    const store = new MultiPropStore();
+    store.patchName('updated');
+    expect(store.getState()).toEqual({ value: 0, name: 'updated' });
+  });
+
+  it('should partially update state with callback', () => {
+    const store = new MultiPropStore();
+    store.patchValue(5);
+    store.incrementWithPatch();
+    expect(store.getState()).toEqual({ value: 6, name: 'initial' });
   });
 });

@@ -50,10 +50,12 @@ class CounterStore extends Store<{ count: number }> {
   }
 
   increment() {
-    this.setState({ count: this.getState().count + 1 });
+    // Callback-based: receives current state, returns new state
+    this.setState(state => ({ count: state.count + 1 }));
   }
 
   decrement() {
+    // Direct value: pass the new state directly
     this.setState({ count: this.getState().count - 1 });
   }
 }
@@ -89,6 +91,31 @@ function App() {
 ```
 
 That's it. One hook export gives you the hook and its `.Context` provider. No extra setup needed.
+
+### Partial State Updates with patchState
+
+For stores with multiple properties, use `patchState` to update only specific fields:
+
+```tsx
+class UserStore extends Store<{ name: string; age: number; email: string }> {
+  protected getInitialState() {
+    return { name: '', age: 0, email: '' };
+  }
+
+  updateName(name: string) {
+    // Only updates name, preserves age and email
+    this.patchState({ name });
+  }
+
+  incrementAge() {
+    // Callback-based: receives current state, returns partial update
+    this.patchState(state => ({ age: state.age + 1 }));
+  }
+}
+```
+
+- `setState` — Replaces the entire state
+- `patchState` — Merges partial updates into existing state
 
 ## Examples
 
