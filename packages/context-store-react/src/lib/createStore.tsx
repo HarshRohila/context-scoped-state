@@ -19,11 +19,16 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
       );
     }
 
-    const state = useSyncExternalStore(
-      (onStoreChange) => {
+    const subscribe = React.useCallback(
+      (onStoreChange: () => void) => {
         const subscription = contextValue.state$().subscribe(onStoreChange);
         return () => subscription.unsubscribe();
       },
+      [contextValue],
+    );
+
+    const state = useSyncExternalStore(
+      subscribe,
       () => contextValue.getState(),
       () => contextValue.getState(), // getServerSnapshot for SSR
     );
