@@ -38,12 +38,10 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
   }: {
     children: React.ReactNode;
   }) {
-    const storeClassRef = React.useRef(new storeClass());
+    const [store] = React.useState(() => new storeClass());
 
     return (
-      <StoreContext.Provider value={storeClassRef.current}>
-        {children}
-      </StoreContext.Provider>
+      <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
     );
   };
 
