@@ -6,7 +6,6 @@ abstract class Store<T> {
   private readonly _stateSubject: BehaviorSubject<T>;
 
   constructor() {
-    this.state = this.getInitialState();
     this._stateSubject = new BehaviorSubject(this.getInitialState());
   }
 
@@ -18,8 +17,6 @@ abstract class Store<T> {
     return this._stateSubject.asObservable();
   }
 
-  public state: T;
-
   protected setState(newState: T | ((currentState: T) => T)): void {
     const nextState =
       typeof newState === 'function'
@@ -29,7 +26,7 @@ abstract class Store<T> {
   }
 
   protected patchState(
-    partialState: Partial<T> | ((currentState: T) => Partial<T>)
+    partialState: Partial<T> | ((currentState: T) => Partial<T>),
   ): void {
     const currentState = this._stateSubject.value;
     const partial =

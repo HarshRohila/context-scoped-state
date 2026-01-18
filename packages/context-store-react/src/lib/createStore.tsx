@@ -2,9 +2,23 @@ import React, { useSyncExternalStore } from 'react';
 import type { Store } from './Store';
 
 function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
-  const StoreContext = React.createContext<T | undefined>(undefined);
+  type StateType = ReturnType<T['getState']>;
+  // Internal type with mutable state for internal assignment
+  type TWithMutableState = T & { state: StateType };
+  // Public type with readonly state for consumers
+  type TWithState = T & { readonly state: StateType };
 
-  function useStore(): T {
+  // Extend user's class to add state property
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const StoreWithState = class extends (storeClass as any) {
+    public state!: StateType;
+  } as new () => TWithMutableState;
+
+  const StoreContext = React.createContext<TWithMutableState | undefined>(
+    undefined,
+  );
+
+  function useStore(): TWithState {
     const contextValue = React.useContext(StoreContext);
 
     if (!contextValue) {
@@ -43,7 +57,7 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
   }: {
     children: React.ReactNode;
   }) {
-    const [store] = React.useState(() => new storeClass());
+    const [store] = React.useState(() => new StoreWithState());
 
     return (
       <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
@@ -55,18 +69,19 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
     state,
   }: {
     children: React.ReactNode;
-    state?: ReturnType<T['getState']>;
+    state?: StateType;
   }) {
-    const createMockStore = (): T => {
+    const createMockStore = (): TWithMutableState => {
       if (state === undefined) {
-        return new storeClass();
+        return new StoreWithState();
       }
-      class MockStore extends (storeClass as new () => Store<unknown>) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const MockStore = class extends (StoreWithState as any) {
         protected getInitialState() {
           return state;
         }
-      }
-      return new MockStore() as unknown as T;
+      } as unknown as new () => TWithMutableState;
+      return new MockStore();
     };
 
     const storeRef = React.useRef(createMockStore());
