@@ -1,8 +1,12 @@
 import React, { useSyncExternalStore } from 'react';
 import type { Store } from './Store';
 
-function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
+function createStoreHook<T extends Store<any, any>>(
+  storeClass: new (contextValue?: any) => T,
+) {
   type StateType = ReturnType<T['getState']>;
+  // Extract the context value type from the Store
+  type ContextValueType = T extends Store<any, infer C> ? C : never;
   // Internal type with mutable state for internal assignment
   type TWithMutableState = T & { state: StateType };
   // Public type with readonly state for consumers
@@ -12,7 +16,7 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const StoreWithState = class extends (storeClass as any) {
     public state!: StateType;
-  } as new () => TWithMutableState;
+  } as new (contextValue?: ContextValueType) => TWithMutableState;
 
   const StoreContext = React.createContext<TWithMutableState | undefined>(
     undefined,
@@ -54,10 +58,12 @@ function createStoreHook<T extends Store<any>>(storeClass: new () => T) {
 
   useStore.Context = function ContextComponent({
     children,
+    value,
   }: {
     children: React.ReactNode;
+    value?: ContextValueType;
   }) {
-    const [store] = React.useState(() => new StoreWithState());
+    const [store] = React.useState(() => new StoreWithState(value));
 
     return (
       <StoreContext.Provider value={store}>{children}</StoreContext.Provider>

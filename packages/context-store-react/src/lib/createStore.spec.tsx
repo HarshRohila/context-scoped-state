@@ -167,4 +167,65 @@ describe('createStoreHook', () => {
 
     expect(screen.getByTestId('count').textContent).toBe('11');
   });
+
+  it('should use Context value prop in getInitialState', () => {
+    class ConfigurableStore extends Store<{ count: number }> {
+      protected override getInitialState(
+        contextValue?: Partial<{ count: number }> | undefined,
+      ): { count: number } {
+        return { count: contextValue?.count ?? 0 };
+      }
+
+      increment() {
+        this.setState({ count: this.getState().count + 1 });
+      }
+    }
+
+    const useConfigurableStore = createStoreHook(ConfigurableStore);
+
+    function ConfigurableCounter() {
+      const store = useConfigurableStore();
+      return (
+        <div>
+          <span data-testid="config-count">{store.state.count}</span>
+          <button onClick={() => store.increment()}>Increment</button>
+        </div>
+      );
+    }
+
+    render(
+      <useConfigurableStore.Context value={{ count: 100 }}>
+        <ConfigurableCounter />
+      </useConfigurableStore.Context>,
+    );
+
+    expect(screen.getByTestId('config-count').textContent).toBe('100');
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByTestId('config-count').textContent).toBe('101');
+  });
+
+  it('should use default when Context value prop is not provided', () => {
+    class ConfigurableStore extends Store<{ count: number }> {
+      protected getInitialState(contextValue?: Partial<{ count: number }>) {
+        return { count: contextValue?.count ?? 5 };
+      }
+    }
+
+    const useConfigurableStore = createStoreHook(ConfigurableStore);
+
+    function ConfigurableCounter() {
+      const store = useConfigurableStore();
+      return <span data-testid="default-count">{store.state.count}</span>;
+    }
+
+    render(
+      <useConfigurableStore.Context>
+        <ConfigurableCounter />
+      </useConfigurableStore.Context>,
+    );
+
+    expect(screen.getByTestId('default-count').textContent).toBe('5');
+  });
 });

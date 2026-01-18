@@ -1,12 +1,14 @@
 import { BehaviorSubject } from 'rxjs';
 
-abstract class Store<T> {
-  protected abstract getInitialState(): T;
+abstract class Store<T, C = Partial<T>> {
+  protected abstract getInitialState(contextValue?: C): T;
 
   private readonly _stateSubject: BehaviorSubject<T>;
 
-  constructor() {
-    this._stateSubject = new BehaviorSubject(this.getInitialState());
+  constructor(contextValue?: C) {
+    this._stateSubject = new BehaviorSubject(
+      this.getInitialState(contextValue),
+    );
   }
 
   getState(): T {

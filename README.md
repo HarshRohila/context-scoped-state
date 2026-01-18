@@ -182,6 +182,45 @@ test('shows normal status when balance is healthy', () => {
 
 No mocking libraries. No global state cleanup. Just render with the state you need.
 
+### Dynamic Initial State with Context Value
+
+Pass a `value` prop to Context to provide data for `getInitialState()`. This is useful when you need to initialize store state from React props:
+
+```tsx
+type CounterState = { count: number };
+
+class CounterStore extends Store<CounterState> {
+  protected getInitialState(contextValue?: Partial<CounterState>) {
+    return { count: contextValue?.count ?? 0 };
+  }
+
+  increment() {
+    this.setState((s) => ({ count: s.count + 1 }));
+  }
+}
+
+const useCounterStore = createStoreHook(CounterStore);
+
+// Initialize store state from a React prop
+function CounterWidget({ initialCount }: { initialCount: number }) {
+  return (
+    <useCounterStore.Context value={{ count: initialCount }}>
+      <Counter />
+    </useCounterStore.Context>
+  );
+}
+
+// Now you can render multiple widgets with different starting values
+function App() {
+  return (
+    <>
+      <CounterWidget initialCount={0} />
+      <CounterWidget initialCount={100} />
+    </>
+  );
+}
+```
+
 ## Why context-scoped-state Over Other Libraries?
 
 | Feature                | context-scoped-state | Redux                        | Zustand        |
@@ -293,21 +332,24 @@ export const useCounterStore = createStoreHook(CounterStore);
 
 **Simplicity:** One export per store file. The hook and its context travel together — you can't accidentally import one without having access to the other.
 
-### Why Only MockContext Allows Setting Initial State?
+### Context `value` vs MockContext `state`
 
-`Context` doesn't accept a `state` prop:
+Both `Context` and `MockContext` accept props, but they work differently:
 
 ```tsx
-// ❌ Not allowed
-<useCounterStore.Context state={{ count: 10 }}>
+// Context: value is passed TO getInitialState() for computation
+<useCounterStore.Context value={{ count: 10 }}>
 
-// ✅ Only in tests
+// MockContext: state REPLACES getInitialState() entirely
 <useCounterStore.MockContext state={{ count: 10 }}>
 ```
 
-**Debuggability:** In production code, the only place initial state can be set is `getInitialState()`. This makes the code easy to reason about — you always know where to look.
+**Why the distinction?**
 
-Context providers are usually in separate files from the components that use them. If Context accepted initial state, you'd have to hunt through your component tree to find where state was configured. With `MockContext`, it's always in the same test file, so it's obvious.
+- `Context.value` — Provides input data for `getInitialState()` to use. Your `getInitialState()` method is still the single source of truth for how state is computed.
+- `MockContext.state` — Bypasses `getInitialState()` completely and sets the state directly. This is only for tests where you need to put the store in a specific state.
+
+**Debuggability:** In production code, `getInitialState()` is always called. You can set a breakpoint there to see exactly how initial state is computed. With `MockContext`, the state is set directly for test convenience.
 
 ### Why `getInitialState()` Method Instead of a Property?
 
