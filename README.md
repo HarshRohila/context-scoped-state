@@ -40,6 +40,8 @@ pnpm add context-scoped-state
 
 ### 1. Create Your Store (one file, one export)
 
+> Wondering why classes? See [API Design Choices](#api-design-choices).
+
 ```tsx
 // counterStore.ts
 import { Store, createStoreHook } from 'context-scoped-state';
@@ -51,7 +53,7 @@ class CounterStore extends Store<{ count: number }> {
 
   increment() {
     // Callback-based: receives current state, returns new state
-    this.setState(state => ({ count: state.count + 1 }));
+    this.setState((state) => ({ count: state.count + 1 }));
   }
 
   decrement() {
@@ -109,7 +111,7 @@ class UserStore extends Store<{ name: string; age: number; email: string }> {
 
   incrementAge() {
     // Callback-based: receives current state, returns partial update
-    this.patchState(state => ({ age: state.age + 1 }));
+    this.patchState((state) => ({ age: state.age + 1 }));
   }
 }
 ```
@@ -227,6 +229,117 @@ No mocking libraries. No global state cleanup. Just render with the state you ne
 - No action types, switch statements, or dispatch boilerplate
 - Just call methods directly: `store.increment()` instead of `dispatch({ type: 'INCREMENT' })`
 - Full TypeScript autocomplete for your actions
+
+---
+
+## API Design Choices
+
+These design decisions are intentional trade-offs that optimize for debuggability, clarity, and simplicity.
+
+### Why Classes for Stores?
+
+Classes let us use `protected` on state-setting methods (`setState`, `patchState`). This means all state updates must go through the store class — components cannot directly modify state.
+
+**Why this matters:** When debugging, you can set a single breakpoint in your store's action methods to see exactly who is changing state and when. No more hunting through components to find where state got mutated.
+
+```tsx
+class CounterStore extends Store<{ count: number }> {
+  increment() {
+    // Set a breakpoint here to catch ALL count changes
+    this.setState((state) => ({ count: state.count + 1 }));
+  }
+}
+```
+
+### Why Can't I Destructure Actions?
+
+This won't work:
+
+```tsx
+const { increment } = useCounterStore(); // ❌ Breaks 'this' binding
+increment(); // Error: cannot read setState of undefined
+```
+
+You must use:
+
+```tsx
+const store = useCounterStore(); // ✅
+store.increment();
+```
+
+**This is a feature, not a bug.** The store is an external dependency — it should look like one. When you see `store.increment()`, it's clear you're calling a method on an external object. If you just saw `increment()`, it would look like a local function, hiding the fact that it's modifying external state.
+
+### Why `useStore.Context` Instead of Separate Exports?
+
+Instead of:
+
+```tsx
+// Two exports to manage
+export const useCounterStore = createStoreHook(CounterStore);
+export const CounterStoreContext = useCounterStore.Context;
+```
+
+We have:
+
+```tsx
+// One export does it all
+export const useCounterStore = createStoreHook(CounterStore);
+
+// Usage
+<useCounterStore.Context>
+  <App />
+</useCounterStore.Context>;
+```
+
+**Simplicity:** One export per store file. The hook and its context travel together — you can't accidentally import one without having access to the other.
+
+### Why Only MockContext Allows Setting Initial State?
+
+`Context` doesn't accept a `state` prop:
+
+```tsx
+// ❌ Not allowed
+<useCounterStore.Context state={{ count: 10 }}>
+
+// ✅ Only in tests
+<useCounterStore.MockContext state={{ count: 10 }}>
+```
+
+**Debuggability:** In production code, the only place initial state can be set is `getInitialState()`. This makes the code easy to reason about — you always know where to look.
+
+Context providers are usually in separate files from the components that use them. If Context accepted initial state, you'd have to hunt through your component tree to find where state was configured. With `MockContext`, it's always in the same test file, so it's obvious.
+
+### Why `getInitialState()` Method Instead of a Property?
+
+Instead of:
+
+```tsx
+class CounterStore extends Store<{ count: number }> {
+  initialState = { count: 0 }; // Static value
+}
+```
+
+We use:
+
+```tsx
+class CounterStore extends Store<{ count: number }> {
+  protected getInitialState() {
+    // Can include logic!
+    return { count: 0 };
+  }
+}
+```
+
+**Flexibility:** A method lets you compute initial state dynamically:
+
+```tsx
+protected getInitialState() {
+  return {
+    count: parseInt(localStorage.getItem('count') ?? '0'),
+    timestamp: Date.now(),
+  };
+}
+```
 
 ---
 
